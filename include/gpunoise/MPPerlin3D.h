@@ -33,7 +33,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 namespace gpunoise
 {
-	class MPPerlin3D : Generator3D
+	class MPPerlin3D : public Generator3D
 	{
 	public:
 		MPPerlin3D();

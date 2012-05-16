@@ -22,33 +22,20 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
-
-
 #ifndef LIBGPUNOISE_ADD3D_H
 #define LIBGPUNOISE_ADD3D_H
 
 #include "Module3D.h"
+#include "BinaryCGOperator3D.h"
 
 namespace gpunoise
 {	  
-	class Add3D : Combiner3D
-	{
-	public:
-		Add3D();
-		Add3D(Module3D* l, Module3D* r);
-
-		Module3D* lhs() const;
-		Module3D* rhs() const;
-		void lhs(Module3D* l);
-		void rhs(Module3D* r);
-
-		virtual std::string generate() const;
-		virtual std::string getName() const;
-	  
-	private:
-		Module3D* mlhs;
-		Module3D* mrhs;
-	};
+  class Add3D : public BinaryCGOperator3D
+  {
+  public:
+    Add3D();
+    Add3D(Module3D* l, Module3D* r);
+  };
 
 } // namespace gpunoise
 

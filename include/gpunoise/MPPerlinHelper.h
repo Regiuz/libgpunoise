@@ -26,14 +26,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef LIBGPUNOISE_MPPERLINHELPER_H
 #define LIBGPUNOISE_MPPERLINHELPER_H
 
-#include "Module3D.h"
-#include "types.h"
 
 #include <string>
+#include "Module.h"
 
 namespace gpunoise
 {
-	class MPPerlinHelper : Helper
+	class MPPerlinHelper : HelperModule
 	{
 	public:
 		MPPerlinHelper();
