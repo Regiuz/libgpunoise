@@ -85,7 +85,7 @@ std::string UnaryCGFunction3D::generate() const
   return
     boost::str(
       boost::format(
-        "float %1%(float3 xyz)\n"
+        "inline float %1%(float3 xyz)\n"
         "{\n"
         "  return %2%(%3%(xyz));\n"
         "}\n") % getName() % function % source()->getName());

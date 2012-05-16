@@ -63,7 +63,7 @@ namespace gpunoise
 
       return boost::str(
               boost::format(
-                "float %1%(float3 xyz)\n"
+                "inline float %1%(float3 xyz)\n"
                 "{\n"
                 "  return %2%(xyz) %3% %4%(xyz);\n"
                 "}\n"

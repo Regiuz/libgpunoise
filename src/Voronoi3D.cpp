@@ -55,19 +55,19 @@ namespace gpunoise
      */
     
     std::string noise =
-      "float4 SGPP_coord_prepare(float4 x) {\n"
+      "inline float4 SGPP_coord_prepare(float4 x) {\n"
       "// return mod( x, 289.0 );  // unoptimized reference\n"
       "  return x - floor(x * ( 1.0 / 289.0 )) * 289.0;\n"
       "}\n"
-      "float4 SGPP_permute(float4 x) {\n"
+      "inline float4 SGPP_permute(float4 x) {\n"
       "  // return mod( ( 34.0 * x + 1.0 ) * x , 289.0 );  // unoptimized reference\n"
       "  return fract( x * ( ( 34.0 / 289.0 ) * x + ( 1.0 / 289.0 ) ) ) * 289.0;  // LQ mod\n"
       "}\n"
-      "float4 SGPP_resolve(float4 x) {\n"
+      "inline float4 SGPP_resolve(float4 x) {\n"
       "  const float K = 7.0 / 288.0;\n"
       "  return fract(x * K);\n"
       "}\n"
-      "float4 SGPP_hash( float2 gridcell ) {\n"
+      "inline float4 SGPP_hash( float2 gridcell ) {\n"
       "//    gridcell is assumed to be an integer coordinate\n"
       "  float4 hash_coord = SGPP_coord_prepare( float4( gridcell.xy, gridcell.xy + 1.0.xx ) );\n"
       "  return SGPP_resolve( SGPP_permute( SGPP_permute( hash_coord.xzxz ) + hash_coord.yyww ) );\n"

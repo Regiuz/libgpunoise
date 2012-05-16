@@ -34,7 +34,10 @@ namespace gpunoise
     return
       boost::str(
         boost::format(
-          "float %1%(float3 xyz){ return %2%( %3%(xyz), %4%(xyz) ); }"
+          "inline float %1%(float3 xyz)\n"
+          "{\n"
+          "  return %2%( %3%(xyz), %4%(xyz) );\n"
+          "}\n"
                ) % getName() % function % lhs()->getName() % rhs()->getName());
   }
   
