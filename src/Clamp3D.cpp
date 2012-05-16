@@ -23,39 +23,41 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "gpunoise/MPPerlinHelper.h"
 
-#include <boost/format.hpp>
+#include "gpunoise/Clamp3D.h"
+
 
 namespace gpunoise
 {
 
-	MPPerlinHelper::MPPerlinHelper()
-	{
-	}
+  Clamp3D::Clamp3D()
+    : UnaryModifier3D()
+  {
 
-	std::string MPPerlinHelper::getName() const
-	{
-		return boost::str(boost::format("MPPerlinHelper"));
-	}
+  }
 
-	std::string MPPerlinHelper::generate() const
-	{
-		return 		"float3 fade( float3 _t ) " \
-					"{ " \
-					"	return _t * _t * _t * (_t * (_t * 6 - 15) + 10); " \
-					"} " \
-	
-					"float permutation(float _x, sampler1D _perm) " \
-					"{ " \
-					"	return tex1D(_perm, _x / 256.0).x * 256;" \
-					"} " \
+  Clamp3D::Clamp3D(Module3D* s, real_t lower_bound, real_t upper_bound)
+    : UnaryModifier3D(s)
+  {
 
-					"float gradient(float _x, sampler1D _grad, float3 _p) " \
-					"{ " \
-					"	return dot(2.0 * tex1D(_grad, _x).xyz - 1.0, _p); " \
-					"}";
-	}
+  }
 
+
+  real_t Clamp3D::GetLowerBound() const
+  {
+    return lower_bound;
+  }
+  
+  real_t Clamp3D::GetUpperBound() const
+  {
+    return upper_bound;
+  }
+  
+  void Clamp3D::SetBounds(real_t lowerBound, real_t upperBound)
+  {
+    lower_bound = lowerBound;
+    upper_bound = upperBound;
+  }
 
 } // namespace gpunoise
+

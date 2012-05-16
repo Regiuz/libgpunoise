@@ -23,39 +23,25 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "gpunoise/MPPerlinHelper.h"
 
-#include <boost/format.hpp>
+#include "gpunoise/Multiply3D.h"
+
 
 namespace gpunoise
 {
 
-	MPPerlinHelper::MPPerlinHelper()
-	{
-	}
+  Multiply3D::Multiply3D()
+    : BinaryCGOperator3D("Multiply3D", "*")
+  {
 
-	std::string MPPerlinHelper::getName() const
-	{
-		return boost::str(boost::format("MPPerlinHelper"));
-	}
+  }
 
-	std::string MPPerlinHelper::generate() const
-	{
-		return 		"float3 fade( float3 _t ) " \
-					"{ " \
-					"	return _t * _t * _t * (_t * (_t * 6 - 15) + 10); " \
-					"} " \
-	
-					"float permutation(float _x, sampler1D _perm) " \
-					"{ " \
-					"	return tex1D(_perm, _x / 256.0).x * 256;" \
-					"} " \
+  Multiply3D::Multiply3D(gpunoise::Module3D* l, gpunoise::Module3D* r)
+    : BinaryCGOperator3D("Multiply3D", "*", l,r)
+  {
 
-					"float gradient(float _x, sampler1D _grad, float3 _p) " \
-					"{ " \
-					"	return dot(2.0 * tex1D(_grad, _x).xyz - 1.0, _p); " \
-					"}";
-	}
+  }
 
 
 } // namespace gpunoise
+

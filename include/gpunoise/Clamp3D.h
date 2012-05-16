@@ -22,40 +22,32 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
+#ifndef LIBGPUNOISE_CLAMP3D_H
+#define LIBGPUNOISE_CLAMP3D_H
 
-#include "gpunoise/MPPerlinHelper.h"
-
-#include <boost/format.hpp>
+#include "Module3D.h"
+#include "types.h"
 
 namespace gpunoise
-{
+{         
+  class Clamp3D : public UnaryModifier3D
+  {
+  public:
+    Clamp3D();
+    Clamp3D(Module3D* s, real_t lower_bound = -1, real_t upper_bound = 1);
+    
+    virtual std::string generate() const;
+    virtual std::string getName() const;
+    
+    real_t GetLowerBound() const;
+    real_t GetUpperBound() const;
+    void SetBounds (real_t lowerBound, real_t upperBound);
 
-	MPPerlinHelper::MPPerlinHelper()
-	{
-	}
-
-	std::string MPPerlinHelper::getName() const
-	{
-		return boost::str(boost::format("MPPerlinHelper"));
-	}
-
-	std::string MPPerlinHelper::generate() const
-	{
-		return 		"float3 fade( float3 _t ) " \
-					"{ " \
-					"	return _t * _t * _t * (_t * (_t * 6 - 15) + 10); " \
-					"} " \
-	
-					"float permutation(float _x, sampler1D _perm) " \
-					"{ " \
-					"	return tex1D(_perm, _x / 256.0).x * 256;" \
-					"} " \
-
-					"float gradient(float _x, sampler1D _grad, float3 _p) " \
-					"{ " \
-					"	return dot(2.0 * tex1D(_grad, _x).xyz - 1.0, _p); " \
-					"}";
-	}
-
+  private:
+    real_t lower_bound;
+    real_t upper_bound;
+  };
 
 } // namespace gpunoise
+
+#endif // LIBGPUNOISE_CLAMP3D_H

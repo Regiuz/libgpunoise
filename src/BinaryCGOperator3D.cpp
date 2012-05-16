@@ -23,39 +23,50 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "gpunoise/MPPerlinHelper.h"
 
+#include "gpunoise/BinaryCGOperator3D.h"
+
+#include <boost/assert.hpp>
 #include <boost/format.hpp>
 
 namespace gpunoise
 {
 
-	MPPerlinHelper::MPPerlinHelper()
-	{
-	}
+  BinaryCGOperator3D::BinaryCGOperator3D(const std::string& name, const std::string& op)
+    : BinaryCombiner3D()
+    , name(name)
+    , op(op)
+  {
 
-	std::string MPPerlinHelper::getName() const
-	{
-		return boost::str(boost::format("MPPerlinHelper"));
-	}
+  }
 
-	std::string MPPerlinHelper::generate() const
-	{
-		return 		"float3 fade( float3 _t ) " \
-					"{ " \
-					"	return _t * _t * _t * (_t * (_t * 6 - 15) + 10); " \
-					"} " \
-	
-					"float permutation(float _x, sampler1D _perm) " \
-					"{ " \
-					"	return tex1D(_perm, _x / 256.0).x * 256;" \
-					"} " \
+  BinaryCGOperator3D::BinaryCGOperator3D(const std::string& name, const std::string& op, gpunoise::Module3D* l, gpunoise::Module3D* r)
+    : BinaryCombiner3D(l,r)
+    , name(name)
+    , op(op)
+  {
 
-					"float gradient(float _x, sampler1D _grad, float3 _p) " \
-					"{ " \
-					"	return dot(2.0 * tex1D(_grad, _x).xyz - 1.0, _p); " \
-					"}";
-	}
+  }
+
+  std::string BinaryCGOperator3D::getName() const
+  {
+    BOOST_ASSERT(!!lhs());
+    BOOST_ASSERT(!!rhs());
+    return boost::str(boost::format("_%2%_cg_op_%1%_%3%_") % name % lhs()->getName() % rhs()->getName());
+  }
+
+
+  std::string BinaryCGOperator3D::generate() const
+  {
+      BOOST_ASSERT(!!lhs());
+      BOOST_ASSERT(!!rhs());
+
+      return boost::str(
+              boost::format(
+                "float %1%(float3 xyz){ return %2%(xyz) %3% %4%(xyz); }"
+                ) % getName() % lhs()->getName() % op % rhs()->getName());
+  }
 
 
 } // namespace gpunoise
+

@@ -23,7 +23,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "MPPerlin3D.h"
+#include "gpunoise/MPPerlin3D.h"
 
 #include <boost/format.hpp>
 

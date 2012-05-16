@@ -23,10 +23,23 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Module3D.h"
+#include "gpunoise/Module3D.h"
 
+namespace gpunoise
+{
 
-gpunoise::Module3D::~Module3D()
+Module3D::~Module3D()
 {
   
 }
+
+UnaryModifier3D::UnaryModifier3D()
+  : msource(NULL)
+{}
+
+UnaryModifier3D::UnaryModifier3D(Module3D* s)
+  : msource(s)
+{}
+
+
+} // namespace gpunoise

@@ -1,0 +1,6 @@
+
+
+
+void fp_entry(
+  out float4 oColour : COLOR)
+{ return float4(1,.5,.5,1); }
