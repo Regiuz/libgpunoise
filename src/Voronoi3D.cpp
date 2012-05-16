@@ -15,6 +15,7 @@
 
 #include <boost/format.hpp>
 #include <boost/format/group.hpp>
+#include <gpunoise/encode.h>
 
 namespace gpunoise
 {
@@ -142,9 +143,9 @@ namespace gpunoise
     using boost::str;
     
     return str(format("Voronoi3D_f%1%_d%2%_s%3%_e_%4%")
-      % boost::io::group(std::hex, std::showbase, mfrequency)
-      % boost::io::group(std::hex, std::showbase, mdisplacement)
-      % boost::io::group(std::hex, std::showbase, mseed)
+      % encode_as_integer(mfrequency)
+      % encode_as_integer(mdisplacement)
+      % mseed
       % (mdistanceenabled ? "true" : "false"));
   }
   
@@ -202,7 +203,7 @@ namespace gpunoise
           + value_def +
           ///FIXME: check source
           "  return value + (displacement * (float)calcNoise((int)floor(min.x), (int)floor(min.y), (int)floor(min.z)));\n"
-          "}"
+          "}\n"
           ) % getName() % mfrequency % mseed % mdisplacement);
     
   }

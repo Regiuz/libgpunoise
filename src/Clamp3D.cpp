@@ -26,18 +26,26 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include "gpunoise/Clamp3D.h"
 
+#include <boost/format.hpp>
+#include <boost/assert.hpp>
+#include <gpunoise/encode.h>
+
 
 namespace gpunoise
 {
 
   Clamp3D::Clamp3D()
     : UnaryModifier3D()
+    , lower_bound(-1)
+    , upper_bound(1)
   {
 
   }
 
   Clamp3D::Clamp3D(Module3D* s, real_t lower_bound, real_t upper_bound)
     : UnaryModifier3D(s)
+    , lower_bound(lower_bound)
+    , upper_bound(upper_bound)
   {
 
   }
@@ -57,6 +65,29 @@ namespace gpunoise
   {
     lower_bound = lowerBound;
     upper_bound = upperBound;
+  }
+  
+  std::string Clamp3D::getName() const
+  {
+    BOOST_ASSERT(source());
+    return
+      boost::str(
+        boost::format(
+          "Clamp3D_l%1%_u%2%__%3%") % encode_as_integer(lower_bound) % encode_as_integer(upper_bound) % source()->getName());
+  }
+  
+  
+  std::string Clamp3D::generate() const
+  {
+    BOOST_ASSERT(source());
+    
+    return
+      boost::str(
+        boost::format(
+          "float %1%(float3 xyz)\n"
+          "{\n"
+          "  return clamp(%2%(xyz), %3%, %4%);\n"
+          "}\n") % getName() % source()->getName() % lower_bound % upper_bound);
   }
 
 } // namespace gpunoise

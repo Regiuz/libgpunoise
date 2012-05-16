@@ -23,53 +23,21 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#ifndef LIBGPUNOISE_ENCODE_H
+#define LIBGPUNOISE_ENCODE_H
 
-#include "gpunoise/BinaryCGOperator3D.h"
-
-#include <boost/assert.hpp>
-#include <boost/format.hpp>
+#include "gpunoise/types.h"
+#include <string>
 
 namespace gpunoise
 {
-
-  BinaryCGOperator3D::BinaryCGOperator3D(const std::string& name, const std::string& op)
-    : BinaryCombiner3D()
-    , name(name)
-    , op(op)
-  {
-
-  }
-
-  BinaryCGOperator3D::BinaryCGOperator3D(const std::string& name, const std::string& op, gpunoise::Module3D* l, gpunoise::Module3D* r)
-    : BinaryCombiner3D(l,r)
-    , name(name)
-    , op(op)
-  {
-
-  }
-
-  std::string BinaryCGOperator3D::getName() const
-  {
-    BOOST_ASSERT(!!lhs());
-    BOOST_ASSERT(!!rhs());
-    return boost::str(boost::format("%1%____%2%___%3%_") % name % lhs()->getName() % rhs()->getName());
-  }
-
-
-  std::string BinaryCGOperator3D::generate() const
-  {
-      BOOST_ASSERT(!!lhs());
-      BOOST_ASSERT(!!rhs());
-
-      return boost::str(
-              boost::format(
-                "float %1%(float3 xyz)\n"
-                "{\n"
-                "  return %2%(xyz) %3% %4%(xyz);\n"
-                "}\n"
-                ) % getName() % lhs()->getName() % op % rhs()->getName());
-  }
-
-
+    
+  std::string encode_as_integer(real_t v);
+  
+  
 } // namespace gpunoise
+
+
+
+#endif // LIBGPUNOISE_ENCODE_H
 

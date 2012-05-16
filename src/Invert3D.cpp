@@ -23,7 +23,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "gpunoise/Module3D.h"
+
+#include "gpunoise/Invert3D.h"
 
 #include <boost/format.hpp>
 #include <boost/assert.hpp>
@@ -31,65 +32,43 @@ OTHER DEALINGS IN THE SOFTWARE.
 namespace gpunoise
 {
 
-Module3D::~Module3D()
-{
-  
-}
+  Invert3D::Invert3D()
+    : UnaryModifier3D()
+  {
 
-UnaryModifier3D::UnaryModifier3D()
-  : msource(NULL)
-{}
+  }
 
-UnaryModifier3D::UnaryModifier3D(Module3D* s)
-  : msource(s)
-{}
+  Invert3D::Invert3D(Module3D* s)
+    : UnaryModifier3D(s)
+  {
 
-Module3D* UnaryModifier3D::source() const
-{
-  return msource;
-}
+  }
 
-void UnaryModifier3D::source(Module3D* s)
-{
-  msource = s;
-}
-
-
-
-
-UnaryCGFunction3D::UnaryCGFunction3D(const std::string& name, const std::string& function)
-  : UnaryModifier3D()
-  , name(name)
-  , function(function)
-{}
-
-UnaryCGFunction3D::UnaryCGFunction3D(const std::string& name, const std::string& function, Module3D* s)
-  : UnaryModifier3D(s)
-  , name(name)
-  , function(function)
-{}
-
-std::string UnaryCGFunction3D::getName() const
-{
-  BOOST_ASSERT(source());
-  return
-    boost::str(
-      boost::format("%1%_%2%") % name % source()->getName());
-}
-
-
-std::string UnaryCGFunction3D::generate() const
-{
-  BOOST_ASSERT(source());
-  
-  return
-    boost::str(
-      boost::format(
-        "float %1%(float3 xyz)\n"
-        "{\n"
-        "  return %2%(%3%(xyz));\n"
-        "}\n") % getName() % function % source()->getName());
-}
+  std::string Invert3D::getName() const
+  {
+    BOOST_ASSERT(source());
+    
+    return
+      boost::str(
+        boost::format("Invert3D_%1%") % source()->getName());
+  }
+    
+  std::string Invert3D::generate() const
+  {
+    
+    BOOST_ASSERT(source());
+    
+    return
+      boost::str(
+        boost::format(
+          "float %1%(float3 xyz)\n"
+          "{\n"
+          "  return -(%2%(xyz));\n"
+          "}\n"
+          
+        ) % getName() % source()->getName());
+  }
 
 
 } // namespace gpunoise
+

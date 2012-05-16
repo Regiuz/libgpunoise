@@ -22,65 +22,24 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
-#ifndef LIBGPUNOISE_MODULE3D_H
-#define LIBGPUNOISE_MODULE3D_H
+#ifndef LIBGPUNOISE_INVERT3D_H
+#define LIBGPUNOISE_INVERT3D_H
 
-#include <boost/noncopyable.hpp>
-#include <string>
-#include "Module.h"
+#include "Module3D.h"
+#include "types.h"
 
 namespace gpunoise
 {
-  
-  ///This is a module that represents a function that takes a 3D value, and returns a 1D value.
-  class Module3D : public Module
+  ///FIXME: Should probably extend a new utility class called UnaryCGOperator3D
+  struct Invert3D : public UnaryModifier3D
   {
-  public:
-    virtual std::string getName() const = 0;
-    virtual std::string generate() const = 0;
-    virtual ~Module3D();
-  };
-
-  class Generator3D : public Module3D
-  {};
-
-  class Combiner3D : public Module3D
-  {};
-
-  class Modifier3D : public Module3D
-  {};
-
-  class Selector3D : public Module3D
-  {};
-
-  class Transformer3D : public Module3D
-  {};
-
-  //FIXME: move this to own file
-  struct UnaryModifier3D : Modifier3D
-  {
-    UnaryModifier3D();
-    UnaryModifier3D(Module3D* s);
-    
-    Module3D* source() const;
-    void source(Module3D* s);
-  private:
-    Module3D* msource;
-  };
-  
-  //FIXME: move this to own file
-  struct UnaryCGFunction3D : UnaryModifier3D
-  {
-    UnaryCGFunction3D(const std::string& name, const std::string& function);
-    UnaryCGFunction3D(const std::string& name, const std::string& function, Module3D* s);
+    Invert3D();
+    Invert3D(Module3D* s);
     
     virtual std::string generate() const;
     virtual std::string getName() const;
-  private:
-    const std::string name;
-    const std::string function;
   };
-  
+
 } // namespace gpunoise
 
-#endif // LIBGPUNOISE_MODULE3D_H
+#endif // LIBGPUNOISE_INVERT3D_H

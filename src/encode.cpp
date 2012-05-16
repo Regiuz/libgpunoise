@@ -23,73 +23,26 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "gpunoise/Module3D.h"
+#include "gpunoise/encode.h"
 
-#include <boost/format.hpp>
-#include <boost/assert.hpp>
+#include <sstream>
+#include <boost/algorithm/string/replace.hpp>
+#include <boost/integer.hpp>
 
 namespace gpunoise
 {
-
-Module3D::~Module3D()
-{
   
-}
-
-UnaryModifier3D::UnaryModifier3D()
-  : msource(NULL)
-{}
-
-UnaryModifier3D::UnaryModifier3D(Module3D* s)
-  : msource(s)
-{}
-
-Module3D* UnaryModifier3D::source() const
-{
-  return msource;
-}
-
-void UnaryModifier3D::source(Module3D* s)
-{
-  msource = s;
-}
-
-
-
-
-UnaryCGFunction3D::UnaryCGFunction3D(const std::string& name, const std::string& function)
-  : UnaryModifier3D()
-  , name(name)
-  , function(function)
-{}
-
-UnaryCGFunction3D::UnaryCGFunction3D(const std::string& name, const std::string& function, Module3D* s)
-  : UnaryModifier3D(s)
-  , name(name)
-  , function(function)
-{}
-
-std::string UnaryCGFunction3D::getName() const
-{
-  BOOST_ASSERT(source());
-  return
-    boost::str(
-      boost::format("%1%_%2%") % name % source()->getName());
-}
-
-
-std::string UnaryCGFunction3D::generate() const
-{
-  BOOST_ASSERT(source());
+  std::string encode_as_integer(real_t v)
+  {
+    std::ostringstream os;
+    
+    typedef boost::uint_t<sizeof(real_t) * 8>::exact integer_t;
+    
+    BOOST_STATIC_ASSERT(sizeof(integer_t) == sizeof(real_t));
+    
+    os << *reinterpret_cast<integer_t*>(&v);
+    
+    return os.str();
+  }
   
-  return
-    boost::str(
-      boost::format(
-        "float %1%(float3 xyz)\n"
-        "{\n"
-        "  return %2%(%3%(xyz));\n"
-        "}\n") % getName() % function % source()->getName());
-}
-
-
 } // namespace gpunoise

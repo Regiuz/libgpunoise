@@ -14,6 +14,7 @@ include_directories( ./include ${OGRE_INCLUDE_DIR} )
 
 add_library(libgpunoise
   #other
+  src/encode.cpp
   src/Module.cpp
   src/Module3D.cpp
   src/MPPerlinHelper.cpp
@@ -25,6 +26,7 @@ add_library(libgpunoise
   #modifiers
   src/Abs3D.cpp
   src/Clamp3D.cpp
+  src/Invert3D.cpp
   
   #generators
   src/MPPerlin3D.cpp

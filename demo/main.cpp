@@ -18,6 +18,11 @@
 #include <gpunoise/Add3D.h>
 #include <gpunoise/Multiply3D.h>
 #include <gpunoise/Min3D.h>
+#include <gpunoise/Clamp3D.h>
+#include <gpunoise/Invert3D.h>
+#include <gpunoise/Max3D.h>
+#include <gpunoise/Power3D.h>
+#include <gpunoise/Abs3D.h>
 
 
 
@@ -85,7 +90,8 @@ void GPUNoiseDemo::createScene()
   {
     using namespace gpunoise;
     
-    std::list< Module* > modules;
+    typedef std::list< Module* > modules_t;
+    modules_t modules;
     
     Voronoi3DHelperModule voronoi_helper_module;
       modules.push_back(&voronoi_helper_module);
@@ -107,21 +113,59 @@ void GPUNoiseDemo::createScene()
     Add3D add_s12(&source1, &source2);
       modules.push_back(&add_s12);
     
+    Clamp3D clamp(&add_s12, .2, .8);
+      modules.push_back(&clamp);
+    
+    Invert3D invert(&clamp);
+      modules.push_back(&invert);
+    
+    Min3D min(&invert, &source1);
+      modules.push_back(&min);
+    Max3D max(&invert, &source2);
+      modules.push_back(&max);
+    
+    Multiply3D multiply(&min, &max);
+      modules.push_back(&multiply);
+    
+    Power3D power(&multiply, &source2);
+      modules.push_back(&power);
+    
+    Abs3D abs3d(&power);
+      modules.push_back(&abs3d);
     
     
+    noise_name = abs3d.getName();
     
-    noise_name = add_s12.getName();
+    ///{name}, to make sure the modules are unique
+    typedef std::set<std::string> unique_module_names_t;
+    unique_module_names_t unique_module_names;
     
-    ///{name => module}, to make sure the modules are unique
-    std::map<std::string, Module*> unique_modules;
+    
+    for (modules_t::iterator w = modules.begin(); w != modules.end(); ++w)
+    {
+      Module* module_ptr = *w;
+      const std::string& name = module_ptr->getName();
+      
+      ///Find @c name in unique_modules
+      unique_module_names_t::iterator x = unique_module_names.lower_bound(name);
+      
+      if (x == unique_module_names.end() || *x != name)
+      {
+        ///If no such name was found,
+        
+        ///Insert the name into the map.
+        unique_module_names.insert(x, name);
+      } else {
+        ///If such a name exists already,
+        
+        ///Remove the module from the list, we don't need to generate the same named function twice.
+        modules.erase(w);
+      }
+      
+    }
     
     BOOST_FOREACH(Module* module_ptr, modules)
-      unique_modules[module_ptr->getName()] = module_ptr;
-    
-    using boost::adaptors::map_values;
-    
-    BOOST_FOREACH(Module* module_ptr, unique_modules | map_values)
-      noise_functions += module_ptr->generate();
+      noise_functions += module_ptr->generate() + "\n\n\n";
   }
   
   std::string vp_shader_string =
@@ -190,7 +234,7 @@ void GPUNoiseDemo::createScene()
   
   
   
-  MaterialPtr material = MaterialManager::getSingleton().create("RTTMat", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+  MaterialPtr material = MaterialManager::getSingleton().create("demo material", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
   
   BOOST_ASSERT(material->getNumTechniques() > 0);
   
