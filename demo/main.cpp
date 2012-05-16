@@ -148,7 +148,7 @@ void GPUNoiseDemo::createScene()
       "  uniform float Z,\n"
       "  out float4 oColour : COLOR)\n"
       "{\n"
-      "  float noises = %2%(float3(uv.x, uv.y, Z * 10));\n"
+      "  float noises = %2%(float3(uv.x, uv.y, Z));\n"
       //"  if (noises < 0)\n"
       //"    oColour.rgb = float3(0,1,0);\n"
       //"  else if(noises > 1)\n"
