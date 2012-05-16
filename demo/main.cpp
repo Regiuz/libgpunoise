@@ -14,6 +14,10 @@
 
 #include "gpunoise/Module3D.h"
 #include "gpunoise/MPPerlin3D.h"
+#include <gpunoise/Voronoi3D.h>
+#include <gpunoise/Add3D.h>
+#include <gpunoise/Multiply3D.h>
+#include <gpunoise/Min3D.h>
 
 
 
@@ -81,51 +85,108 @@ void GPUNoiseDemo::createScene()
   {
     using namespace gpunoise;
     
-    std::list< Module3D* > modules;
+    std::list< Module* > modules;
     
-    MPPerlin3D source1;
+    Voronoi3DHelperModule voronoi_helper_module;
+      modules.push_back(&voronoi_helper_module);
+    
+    Voronoi3D source1(&voronoi_helper_module);
+      modules.push_back(&source1);
+    Voronoi3D source2(&voronoi_helper_module);
+      modules.push_back(&source2);
+    
+    
+    source1.SetFrequency(50);
+    source1.SetDisplacement(50);
+    
+    source2.SetSeed(3);
+    source2.SetFrequency(2);
+    source2.SetDisplacement(5);
+    
+    
+    Add3D add_s12(&source1, &source2);
+      modules.push_back(&add_s12);
     
     
     
-    modules.push_back(&source1);
+    
+    noise_name = add_s12.getName();
     
     ///{name => module}, to make sure the modules are unique
-    std::map<std::string, Module3D*> unique_modules;
+    std::map<std::string, Module*> unique_modules;
     
-    BOOST_FOREACH(Module3D* module_ptr, modules)
+    BOOST_FOREACH(Module* module_ptr, modules)
       unique_modules[module_ptr->getName()] = module_ptr;
     
     using boost::adaptors::map_values;
     
-    BOOST_FOREACH(Module3D* module_ptr, unique_modules | map_values)
+    BOOST_FOREACH(Module* module_ptr, unique_modules | map_values)
       noise_functions += module_ptr->generate();
   }
   
+  std::string vp_shader_string =
+    "void vp_entry(\n"
+    "  in float4 iPosition : POSITION,\n"
+    "  in float2 iTexCoord0 : TEXCOORD0,\n"
+    "  uniform float4x4 worldviewproj,\n"
+    "\n"
+    "  out float4 oViewPosition : POSITION,\n"
+    "  out float2 oTexCoord0 : TEXCOORD0)\n"
+    "{\n"
+    "  oViewPosition = mul(worldviewproj, iPosition);\n"
+    "  oTexCoord0 = iTexCoord0;\n"
+    "}\n";
   
-  
-  std::string shader_string =
+  std::string fp_shader_string =
     boost::str(boost::format(
-      "%1%"
-      "void fp_entry("
-        "in float2 uv : TEXCOORD0,\n"
-        "out float4 oColour : COLOR)\n"
-      "{ oColour = %2%(uv.u, uv.v, 0); }") % noise_functions % noise_name);
+      "%1%\n\n"
+      "\n"
+      "\n"
+      "\n"
+      "void fp_entry(\n"
+      "  in float2 uv : TEXCOORD0,\n"
+      "  uniform float Z,\n"
+      "  out float4 oColour : COLOR)\n"
+      "{\n"
+      "  float noises = %2%(float3(uv.x, uv.y, Z * 10));\n"
+      //"  if (noises < 0)\n"
+      //"    oColour.rgb = float3(0,1,0);\n"
+      //"  else if(noises > 1)\n"
+      //"    oColour.rbg = float3(1,0,0);\n"
+      //"  else\n"
+      "    oColour.rbg = abs(noises);\n"
+      "  oColour.a = 1;\n"
+      "}\n"
+      ) % noise_functions % noise_name);
 
+  std::cout << fp_shader_string << std::endl;
   
-  HighLevelGpuProgramPtr gpu_program = 
-    HighLevelGpuProgramManager::getSingleton().createProgram("demo shader",
+  HighLevelGpuProgramPtr fp_gpu_program = 
+    HighLevelGpuProgramManager::getSingleton().createProgram("demo fp shader",
                                                              ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
                                                              "cg",
                                                              GPT_FRAGMENT_PROGRAM);
   
-  gpu_program->setSource(shader_string);
+  fp_gpu_program->setSource(fp_shader_string);
   //gpu_program->setSourceFile("demo_shader.cg");
   
-  gpu_program->setParameter("profiles", "ps_3_0 fp40");
-  gpu_program->setParameter("entry_point", "fp_entry");
+  fp_gpu_program->setParameter("profiles", "fp40");
+  fp_gpu_program->setParameter("entry_point", "fp_entry");
 
+  fp_gpu_program->load();
   
-  gpu_program->load();
+  HighLevelGpuProgramPtr vp_gpu_program = 
+    HighLevelGpuProgramManager::getSingleton().createProgram("demo vp shader",
+                                                             ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+                                                             "cg",
+                                                             GPT_VERTEX_PROGRAM);
+  
+  vp_gpu_program->setSource(vp_shader_string);
+  //gpu_program->setSourceFile("demo_shader.cg");
+  
+  vp_gpu_program->setParameter("profiles", "vs_1_1 arbvp1");
+  vp_gpu_program->setParameter("entry_point", "vp_entry");
+  vp_gpu_program->load();
   
   
   
@@ -138,8 +199,15 @@ void GPUNoiseDemo::createScene()
   BOOST_ASSERT(technique->getNumPasses() > 0);
   
   Pass* pass = technique->getPass(0);
-  pass->setFragmentProgram(gpu_program->getName());
+  pass->setFragmentProgram(fp_gpu_program->getName());
+  pass->setVertexProgram(vp_gpu_program->getName());
   
+  GpuProgramParametersSharedPtr vertexParams = pass->getVertexProgramParameters(); 
+  vertexParams->setNamedAutoConstant("worldviewproj", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
+  
+  GpuProgramParametersSharedPtr fragmentParams = pass->getFragmentProgramParameters();
+  //fragmentParams->setNamedConstant("Z", 1.0);
+  fragmentParams->setNamedConstantFromTime("Z", .01);
   
   //pass->setFragmentProgramParameters();
   /*
